@@ -77,9 +77,9 @@ jobs:
       - name: Create test users
         env:
           BASE_URL: http://127.0.0.1:8000
-          TEST_EMAIL: qa_test@anncrm.test
+          TEST_EMAIL: qa_test@example.com
           TEST_PASSWORD: qa_test_password
-          SECOND_TEST_EMAIL: qa_test2@anncrm.test
+          SECOND_TEST_EMAIL: qa_test2@example.com
           SECOND_TEST_PASSWORD: qa_test2_password
         run: |
           python tests/api/setup_test_users.py
