@@ -1,7 +1,7 @@
 import requests
 
 
-BASE_URL = "http://127.0.0.1:8000"
+from config import BASE_URL
 
 
 def test_get_clients(auth_token):
@@ -191,75 +191,48 @@ def test_get_clients_with_invalid_token():
 
     assert response.status_code == 401
 
-def test_user_cannot_get_another_users_client(auth_token):
-    second_login = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": "qaz@qaz.qaz",
-            "password": "qazqaz"
-        }
-    )
-
-    assert second_login.status_code == 200
-
-    second_token = second_login.json()["access_token"]
-
+def test_user_cannot_get_another_users_client(
+    second_auth_token,
+    client_id,
+):
     response = requests.get(
-        f"{BASE_URL}/clients/1",  # Замените на реальный ID клиента, принадлежащего другому пользователю
+        f"{BASE_URL}/clients/{client_id}",
         headers={
-            "Authorization": f"Bearer {second_token}"
-        }
+            "Authorization": f"Bearer {second_auth_token}"
+        },
     )
 
     assert response.status_code in [403, 404]
 
-def test_user_cannot_update_another_users_client(auth_token):
-    second_login = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": "qaz@qaz.qaz",
-            "password": "qazqaz"
-        }
-    )
-
-    assert second_login.status_code == 200
-
-    second_token = second_login.json()["access_token"]
-
+def test_user_cannot_update_another_users_client(
+    second_auth_token,
+    client_id,
+):
     updated_data = {
         "name": "Hacked Client",
         "phone": "+79990009999",
-        "email": "hacked@test.com"
+        "email": "hacked@test.com",
     }
 
     response = requests.put(
-        f"{BASE_URL}/clients/1",
+        f"{BASE_URL}/clients/{client_id}",
         json=updated_data,
         headers={
-            "Authorization": f"Bearer {second_token}"
-        }
+            "Authorization": f"Bearer {second_auth_token}"
+        },
     )
 
     assert response.status_code in [403, 404]
 
-def test_user_cannot_delete_another_users_client(auth_token):
-    second_login = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": "qaz@qaz.qaz",
-            "password": "qazqaz"
-        }
-    )
-
-    assert second_login.status_code == 200
-
-    second_token = second_login.json()["access_token"]
-
+def test_user_cannot_delete_another_users_client(
+    second_auth_token,
+    client_id,
+):
     response = requests.delete(
-        f"{BASE_URL}/clients/1",
+        f"{BASE_URL}/clients/{client_id}",
         headers={
-            "Authorization": f"Bearer {second_token}"
-        }
+            "Authorization": f"Bearer {second_auth_token}"
+        },
     )
 
     assert response.status_code in [403, 404]
