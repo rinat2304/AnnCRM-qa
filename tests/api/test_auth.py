@@ -1,60 +1,100 @@
+import allure
 import requests
 
-from config import BASE_URL, TEST_EMAIL, TEST_PASSWORD
+import os
+
+BASE_URL = os.getenv(
+    "BASE_URL",
+    "http://127.0.0.1:8000"
+)
 
 
-BASE_URL = "http://127.0.0.1:8000"
-
-
+@allure.feature("Authentication")
+@allure.story("Login")
+@allure.title("Успешная авторизация пользователя")
+@allure.severity(allure.severity_level.CRITICAL)
 def test_login_success():
-    response = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": TEST_EMAIL,
-            "password": TEST_PASSWORD
-        }
-    )
 
-    assert response.status_code == 200
-    assert "access_token" in response.json()
+    with allure.step("Отправить запрос на авторизацию"):
+        response = requests.post(
+            f"{BASE_URL}/auth/login",
+            data={
+                "username": "qaz@qaz.qaz",
+                "password": "qazqaz",
+            },
+        )
 
+    with allure.step("Проверить статус ответа 200"):
+        assert response.status_code == 200
+
+    with allure.step("Проверить наличие access token"):
+        assert "access_token" in response.json()
+
+
+@allure.feature("Authentication")
+@allure.story("Login")
+@allure.title("Авторизация с неверным паролем")
+@allure.severity(allure.severity_level.NORMAL)
 def test_login_invalid_password():
-    response = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": TEST_EMAIL,
-            "password": "sadfasdfsadf"
-        }
-    )
 
-    assert response.status_code == 401
+    with allure.step("Отправить запрос с неверным паролем"):
+        response = requests.post(
+            f"{BASE_URL}/auth/login",
+            data={
+                "username": "qaz@qaz.qaz",
+                "password": "wrong_password",
+            },
+        )
 
+    with allure.step("Проверить статус ответа 401"):
+        assert response.status_code == 401
+
+
+@allure.feature("Authorization")
+@allure.story("Access clients with authentication")
+@allure.title("Авторизованный пользователь получает список клиентов")
+@allure.severity(allure.severity_level.CRITICAL)
 def test_get_clients_with_auth():
-    login_response = requests.post(
-        f"{BASE_URL}/auth/login",
-        data={
-            "username": TEST_EMAIL,
-            "password": TEST_PASSWORD
-        }
-    )
 
-    assert login_response.status_code == 200
+    with allure.step("Авторизоваться"):
+        login_response = requests.post(
+            f"{BASE_URL}/auth/login",
+            data={
+                "username": "qaz@qaz.qaz",
+                "password": "qazqaz",
+            },
+        )
+
+    with allure.step("Проверить успешную авторизацию"):
+        assert login_response.status_code == 200
 
     token = login_response.json()["access_token"]
 
-    response = requests.get(
-        f"{BASE_URL}/clients",
-        headers={
-            "Authorization": f"Bearer {token}"
-        }
-    )
+    with allure.step("Получить список клиентов"):
+        response = requests.get(
+            f"{BASE_URL}/clients",
+            headers={
+                "Authorization": f"Bearer {token}"
+            },
+        )
 
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    with allure.step("Проверить статус ответа 200"):
+        assert response.status_code == 200
 
+    with allure.step("Проверить, что ответ содержит список"):
+        assert isinstance(response.json(), list)
+
+
+@allure.feature("Authorization")
+@allure.story("Access clients without authentication")
+@allure.title("Неавторизованный пользователь не получает список клиентов")
+@allure.severity(allure.severity_level.CRITICAL)
 def test_get_clients_without_auth():
-    response = requests.get(
-        f"{BASE_URL}/clients"
-    )
 
-    assert response.status_code == 401
+    with allure.step("Отправить запрос без Authorization"):
+        response = requests.get(
+            f"{BASE_URL}/clients"
+        )
+
+    with allure.step("Проверить статус ответа 401"):
+        assert response.status_code == 401
