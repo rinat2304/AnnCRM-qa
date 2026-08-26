@@ -1,23 +1,13 @@
-import os
-
 import pytest
 import requests
 
-
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
-
-TEST_EMAIL = os.getenv("TEST_EMAIL", "qaz@qaz.qaz")
-TEST_PASSWORD = os.getenv("TEST_PASSWORD", "qazqaz")
-
-SECOND_TEST_EMAIL = os.getenv(
-    "SECOND_TEST_EMAIL",
-    "user@example.com"
+from config import (
+    BASE_URL,
+    TEST_EMAIL,
+    TEST_PASSWORD,
+    SECOND_TEST_EMAIL,
+    SECOND_TEST_PASSWORD,
 )
-SECOND_TEST_PASSWORD = os.getenv(
-    "SECOND_TEST_PASSWORD",
-    "string"
-)
-
 
 @pytest.fixture
 def auth_token():

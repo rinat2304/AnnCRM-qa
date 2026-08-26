@@ -19,11 +19,21 @@ def create_user(username, email, password):
         },
     )
 
-    if response.status_code not in [200, 201, 400]:
-        raise RuntimeError(
-            f"Failed to create test user {email}: "
-            f"{response.status_code} {response.text}"
+    if response.status_code in [200, 201]:
+        print(f"Created test user: {email}")
+        return
+
+    if response.status_code == 400:
+        print(
+            f"User may already exist: {email}. "
+            f"Response: {response.text}"
         )
+        return
+
+    raise RuntimeError(
+        f"Failed to create test user {email}: "
+        f"{response.status_code} {response.text}"
+    )
 
 
 if __name__ == "__main__":
