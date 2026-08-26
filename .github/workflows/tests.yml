@@ -33,7 +33,6 @@ jobs:
           python-version: "3.12"
 
       - name: Install QA dependencies
-        working-directory: .
         run: |
           pip install -r requirements.txt
 
@@ -66,7 +65,25 @@ jobs:
 
       - name: Wait for backend
         run: |
-          sleep 5
+          for i in {1..30}; do
+            if curl -f http://127.0.0.1:8000/docs > /dev/null 2>&1; then
+              echo "Backend is ready"
+              break
+            fi
+
+            echo "Waiting for backend..."
+            sleep 1
+          done
+
+      - name: Create test users
+        run: |
+          curl -f -X POST http://127.0.0.1:8000/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"username":"qaz","email":"qaz@qaz.qaz","password":"qazqaz"}'
+
+          curl -f -X POST http://127.0.0.1:8000/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"username":"user","email":"user@example.com","password":"string"}'
 
       - name: Run API tests
         env:
